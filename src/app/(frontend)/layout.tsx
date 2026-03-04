@@ -1,17 +1,18 @@
 import type { Metadata } from 'next'
 import React from 'react'
 import '../globals.css'
+import { Header } from '@/components/Header'
+import { Footer } from '@/components/Footer'
 
 export const metadata: Metadata = {
     title: {
-        default: 'Dawra — AI Content & Services Platform',
         template: '%s | Dawra',
+        default: 'Dawra',
     },
-    description: 'AI content and services platform — tools, courses, reports, and automation.',
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://dawra.live'),
+    description: 'AI Content and Services Platform',
 }
 
-export default function RootLayout({
+export default function FrontendLayout({
     children,
 }: {
     children: React.ReactNode
