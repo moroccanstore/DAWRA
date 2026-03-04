@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payloadClient'
+import { generatePageMetadata, generateJsonLd } from '@/lib/seo'
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -19,10 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const service = result.docs[0] as any
     if (!service) return { title: 'Service Not Found' }
 
-    return {
+    return generatePageMetadata({
         title: service.seo?.title || service.title,
         description: service.seo?.description || service.heroSection?.headline,
-    }
+        path: `/services/${slug}`,
+        type: 'website',
+        modifiedAt: service.updatedAt,
+    })
 }
 
 export default async function ServiceDetailPage({ params }: Props) {
@@ -40,6 +44,21 @@ export default async function ServiceDetailPage({ params }: Props) {
 
     return (
         <div className="min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: generateJsonLd({
+                        type: 'Product', // Also acceptable for services
+                        name: service.title,
+                        description: service.heroSection?.headline || service.seo?.description,
+                        brand: {
+                            '@type': 'Brand',
+                            name: 'Dawra',
+                        },
+                    }),
+                }}
+            />
+
             {/* Hero */}
             <section className="bg-gray-50 dark:bg-zinc-900 py-24 sm:py-32">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

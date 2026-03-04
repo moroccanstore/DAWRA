@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payloadClient'
+import { generatePageMetadata, generateJsonLd } from '@/lib/seo'
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -19,10 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const tool = result.docs[0] as any
     if (!tool) return { title: 'Tool Not Found' }
 
-    return {
+    return generatePageMetadata({
         title: `${tool.name} Review & Pricing`,
         description: `Read our comprehensive review of ${tool.name}.`,
-    }
+        path: `/tools/${slug}`,
+        type: 'website',
+        modifiedAt: tool.updatedAt,
+    })
 }
 
 export default async function ToolDetailPage({ params }: Props) {
@@ -40,6 +44,27 @@ export default async function ToolDetailPage({ params }: Props) {
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: generateJsonLd({
+                        type: 'SoftwareApplication',
+                        name: tool.name,
+                        applicationCategory: typeof tool.category === 'object' ? tool.category.name : 'BusinessApplication',
+                        offers: {
+                            '@type': 'Offer',
+                            price: tool.pricing === 'free' ? '0' : '0', // Fallback for schema
+                            priceCurrency: 'USD',
+                        },
+                        aggregateRating: tool.rating ? {
+                            '@type': 'AggregateRating',
+                            ratingValue: tool.rating,
+                            reviewCount: 1,
+                        } : undefined,
+                    }),
+                }}
+            />
+
             <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-3xl p-8 sm:p-12 shadow-sm mb-12">
                 <div className="flex flex-col md:flex-row gap-8 items-start justify-between border-b border-gray-100 dark:border-zinc-800 pb-8 mb-8">
                     <div>

@@ -60,7 +60,7 @@ export function generatePageMetadata({
  * Generates JSON-LD structured data for a page.
  */
 export function generateJsonLd(data: {
-    type: 'WebSite' | 'Article' | 'BreadcrumbList' | 'Organization' | 'Product'
+    type: 'WebSite' | 'Article' | 'BreadcrumbList' | 'Organization' | 'Product' | 'SoftwareApplication' | 'VideoObject'
     [key: string]: unknown
 }): string {
     return JSON.stringify({

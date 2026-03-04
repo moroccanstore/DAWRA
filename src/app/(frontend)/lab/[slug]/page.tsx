@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payloadClient'
+import { generatePageMetadata, generateJsonLd } from '@/lib/seo'
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -19,10 +20,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const video = result.docs[0] as any
     if (!video) return { title: 'Video Not Found' }
 
-    return {
+    return generatePageMetadata({
         title: `${video.title} | The Lab by Dawra`,
         description: video.seo?.description || `Watch this tutorial: ${video.title}`,
-    }
+        path: `/lab/${slug}`,
+        image: typeof video.thumbnail === 'object' && video.thumbnail?.url ? video.thumbnail.url : undefined,
+        type: 'article',
+        publishedAt: video.createdAt,
+        modifiedAt: video.updatedAt,
+    })
 }
 
 export default async function LabDetailPage({ params }: Props) {
@@ -52,6 +58,20 @@ export default async function LabDetailPage({ params }: Props) {
 
     return (
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-12 min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: generateJsonLd({
+                        type: 'VideoObject',
+                        name: video.title,
+                        description: video.seo?.description || `Watch this tutorial: ${video.title}`,
+                        thumbnailUrl: typeof video.thumbnail === 'object' && video.thumbnail?.url ? video.thumbnail.url : 'https://dawra.live/default-thumbnail.jpg',
+                        uploadDate: video.createdAt,
+                        embedUrl: embedUrl || '',
+                    }),
+                }}
+            />
+
             <Link href="/lab" className="text-sm font-medium text-gray-500 hover:text-blue-600 mb-8 inline-block transition-colors">
                 &larr; Back to Lab
             </Link>

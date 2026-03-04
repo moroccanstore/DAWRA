@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { getPayloadClient } from '@/lib/payloadClient'
+import { generatePageMetadata, generateJsonLd } from '@/lib/seo'
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -18,10 +19,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const post = result.docs[0] as any
     if (!post) return { title: 'Post Not Found' }
 
-    return {
+    return generatePageMetadata({
         title: post.seo?.title || post.title,
         description: post.seo?.description || post.excerpt,
-    }
+        path: `/blog/${slug}`,
+        image: typeof post.featuredImage === 'object' && post.featuredImage?.url ? post.featuredImage.url : undefined,
+        type: 'article',
+        publishedAt: post.publishedAt,
+        modifiedAt: post.updatedAt,
+    })
 }
 
 export default async function BlogPostPage({ params }: Props) {
@@ -39,6 +45,23 @@ export default async function BlogPostPage({ params }: Props) {
 
     return (
         <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: generateJsonLd({
+                        type: 'Article',
+                        headline: post.title,
+                        description: post.excerpt,
+                        datePublished: post.publishedAt,
+                        dateModified: post.updatedAt,
+                        author: {
+                            '@type': 'Organization',
+                            name: 'Dawra',
+                        },
+                    }),
+                }}
+            />
+
             <header className="mb-12 text-center">
                 {post.category && (
                     <span className="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4 block">

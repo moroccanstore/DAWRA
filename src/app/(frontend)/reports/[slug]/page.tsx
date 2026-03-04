@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getPayloadClient } from '@/lib/payloadClient'
+import { generatePageMetadata, generateJsonLd } from '@/lib/seo'
 
 type Props = {
     params: Promise<{ slug: string }>
@@ -19,10 +20,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const report = result.docs[0] as any
     if (!report) return { title: 'Report Not Found' }
 
-    return {
+    return generatePageMetadata({
         title: `${report.title} | Research by Dawra`,
         description: report.seo?.description || report.summary,
-    }
+        path: `/reports/${slug}`,
+        type: 'article',
+        publishedAt: report.publishedAt,
+        modifiedAt: report.updatedAt,
+    })
 }
 
 export default async function ReportDetailPage({ params }: Props) {
@@ -40,6 +45,23 @@ export default async function ReportDetailPage({ params }: Props) {
 
     return (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 min-h-screen">
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{
+                    __html: generateJsonLd({
+                        type: 'Article',
+                        headline: report.title,
+                        description: report.summary,
+                        datePublished: report.publishedAt,
+                        dateModified: report.updatedAt,
+                        author: {
+                            '@type': 'Organization',
+                            name: 'Dawra',
+                        },
+                    }),
+                }}
+            />
+
             <Link href="/reports" className="text-sm font-medium text-gray-500 hover:text-blue-600 mb-8 inline-block transition-colors">
                 &larr; Back to Reports
             </Link>
