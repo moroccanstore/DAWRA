@@ -52,7 +52,7 @@ export default buildConfig({
 
     editor: lexicalEditor(),
 
-    secret: process.env.PAYLOAD_SECRET || '',
+    secret: process.env.PAYLOAD_SECRET || 'unsecure_build_secret_please_set_in_production',
 
     typescript: {
         outputFile: path.resolve(dirname, 'payload-types.ts'),
